@@ -1,0 +1,20 @@
+{
+  "id": "json-editor",
+  "name": "JSON Editor extension",
+  "srcdoc": "index.html",
+  "fieldTypes": ["Object"],
+  "parameters": {
+    "instance": [
+      {
+        "id": "url",
+        "type": "Symbol",
+        "name": "URL"
+      },
+      {
+        "id": "schemaFieldId",
+        "type": "Symbol",
+        "name": "Schema Field Id"
+      }
+    ]
+  }
+}

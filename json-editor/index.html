@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JSON Form Editor Widget</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+    <script src="https://unpkg.com/contentful-ui-extensions-sdk@3/dist/cf-extension-api.js"></script>
+    <script src="https://unpkg.com/json-editor@0.7.28/dist/jsoneditor.js"></script>
+  </head>
+  <body>
+    <script>
+     var cfExt = window.contentfulExtension || window.contentfulWidget;
+      var cfApi;
+      var editor;
+
+     cfExt.init(initContentfulJsonFormEditor);
+
+     function initContentfulJsonFormEditor (api) {
+       cfApi = api;
+       cfApi.window.startAutoResizer();
+       editorElem = createElement('div', {className: 'jfe-editor-root'});
+			 cfApi.entry.fields[api.parameters.instance.schemaFieldId].onValueChanged(reloadSchema);
+     }
+
+      function reloadSchema(){
+        var serviceUri = api.parameters.instance.url;
+        var schemaId = cfApi.entry.fields[api.parameters.instance.schemaFieldId].getValue();
+
+        console.log("trying to load-> " + serviceUri + "/" + schemaId);
+        $.ajax({
+          url: serviceUri + "/" + schemaId,
+          type: "GET",
+          crossDomain: true,
+          dataType: "json",
+          success: applySchema,
+          error: function (xhr, status) {
+            console.log("Error fetching data. Status:", xhr, status)
+          }
+        })
+      }
+
+      function applySchema(response){
+        console.log(response);
+        if(editor) editor.destroy();
+        editor = new JSONEditor(
+          editorElem,
+          {
+            schema: response,
+          	no_additional_properties: true,
+          	required_by_default: true,
+          	startval: cfApi.field.getValue(),
+          	disable_collapse: true,
+          	disable_properties: true,
+          	show_errors: 'always'
+         });
+
+         editor.on('change', inputChanged);
+
+         function inputChanged () {
+             cfApi.window.updateHeight();
+             validateAndSave();
+         }
+
+         var validateAndSave = debounce(function () {
+             var errors = editor.validate();
+
+             if (errors.length === 0) {
+                 var currentJSON = editor.getValue();
+                 cfApi.field.setValue(currentJSON);
+             }
+         }, 150);
+      }
+
+     function createElement (elem, opts, parent) {
+	       if (parent)
+						parent.removeChild(element);
+         var e = document.createElement(elem);
+         var prop;
+
+         for (prop in opts) {
+             e[prop] = opts[prop];
+         }
+         parent = parent || document.body;
+         parent.appendChild(e);
+         return e;
+     }
+
+     // http://davidwalsh.name/javascript-debounce-function
+     function debounce (func, wait) {
+         var timeout;
+         return function () {
+             var context = this, args = arguments;
+             var later = function () {
+                 timeout = null;
+                 func.apply(context, args);
+             };
+             clearTimeout(timeout);
+             timeout = setTimeout(later, wait);
+             if (!timeout) func.apply(context, args);
+         };
+     }
+
+    </script>
+  </body>
+</html>
