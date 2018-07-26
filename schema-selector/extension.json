@@ -1,0 +1,15 @@
+{
+  "id": "schema-selector",
+  "name": "Schema Selector extension",
+  "srcdoc": "index.html",
+  "fieldTypes": ["Symbol", "Text"],
+  "parameters": {
+    "instance": [
+      {
+        "id": "url",
+        "type": "Symbol",
+        "name": "URL"
+      }
+    ]
+  }
+}
